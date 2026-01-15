@@ -33,6 +33,9 @@ class TodoApp {
         // Load from localStorage
         this.loadTodos();
 
+        // Register Service Worker
+        this.registerServiceWorker();
+
         // Event Listeners
         this.addBtn.addEventListener('click', () => this.addTodo());
         this.todoInput.addEventListener('keypress', (e) => {
@@ -87,9 +90,121 @@ class TodoApp {
         // Initialize voice recognition
         this.initVoiceRecognition();
 
+        // Initialize PWA install prompt
+        this.initPWAInstallPrompt();
+
         // Initial render
         this.renderCalendar();
         this.render();
+    }
+
+    registerServiceWorker() {
+        if ('serviceWorker' in navigator) {
+            let refreshing = false;
+
+            navigator.serviceWorker.register('/sw.js').then(registration => {
+                console.log('Service Worker registered:', registration);
+
+                registration.onupdatefound = () => {
+                    const newWorker = registration.installing;
+                    newWorker.onstatechange = () => {
+                        if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                            if (!refreshing) {
+                                refreshing = true;
+                                this.showUpdateNotification();
+                            }
+                        }
+                    };
+                };
+            }).catch(error => {
+                console.log('Service Worker registration failed:', error);
+            });
+        }
+    }
+
+    showUpdateNotification() {
+        const existingUpdate = document.querySelector('.update-notification');
+        if (existingUpdate) return;
+
+        const notification = document.createElement('div');
+        notification.className = 'update-notification';
+        notification.innerHTML = `
+            <div class="update-content">
+                <span class="update-icon">🔄</span>
+                <span class="update-text">发现新版本</span>
+                <button class="update-btn" id="updateBtn">立即更新</button>
+            </div>
+        `;
+
+        document.body.appendChild(notification);
+
+        document.getElementById('updateBtn').addEventListener('click', () => {
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.controller.postMessage({ type: 'SKIP_WAITING' });
+            }
+            window.location.reload();
+        });
+    }
+
+    initPWAInstallPrompt() {
+        let deferredPrompt;
+
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+
+            const existingPrompt = document.querySelector('.install-prompt');
+            if (existingPrompt) return;
+
+            this.showInstallPrompt(() => {
+                if (deferredPrompt) {
+                    deferredPrompt.prompt();
+                    deferredPrompt.userChoice.then((choiceResult) => {
+                        if (choiceResult.outcome === 'accepted') {
+                            console.log('PWA installed');
+                        }
+                        deferredPrompt = null;
+                    });
+                }
+            });
+        });
+
+        window.addEventListener('appinstalled', () => {
+            const prompt = document.querySelector('.install-prompt');
+            if (prompt) {
+                prompt.remove();
+            }
+            this.showToast('已安装到桌面', 'success');
+        });
+    }
+
+    showInstallPrompt(onInstall) {
+        const prompt = document.createElement('div');
+        prompt.className = 'install-prompt';
+        prompt.innerHTML = `
+            <div class="install-content">
+                <div class="install-info">
+                    <span class="install-icon">📱</span>
+                    <div class="install-text">
+                        <span class="install-title">安装应用</span>
+                        <span class="install-desc">添加到主屏幕，离线也能使用</span>
+                    </div>
+                </div>
+                <button class="install-btn" id="installBtn">安装</button>
+                <button class="install-close" id="installClose">×</button>
+            </div>
+        `;
+
+        document.body.appendChild(prompt);
+
+        document.getElementById('installBtn').addEventListener('click', () => {
+            onInstall();
+            prompt.remove();
+        });
+
+        document.getElementById('installClose').addEventListener('click', () => {
+            prompt.remove();
+        });
     }
 
     // Date utility functions

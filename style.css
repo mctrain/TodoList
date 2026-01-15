@@ -279,6 +279,14 @@ header h1 {
     display: flex;
     align-items: center;
     justify-content: center;
+    -webkit-tap-highlight-color: transparent;
+}
+
+@media (pointer: coarse) {
+    .calendar-nav {
+        width: 48px;
+        height: 48px;
+    }
 }
 
 .calendar-nav:hover {
@@ -319,6 +327,13 @@ header h1 {
     transition: all 0.3s ease;
     position: relative;
     border: 1px solid transparent;
+    -webkit-tap-highlight-color: transparent;
+}
+
+@media (pointer: coarse) {
+    .calendar-day {
+        font-size: 1rem;
+    }
 }
 
 .calendar-day:hover:not(.empty):not(.selected) {
@@ -509,6 +524,17 @@ header h1 {
     cursor: pointer;
     transition: all 0.3s ease;
     font-size: 0.9rem;
+    -webkit-tap-highlight-color: transparent;
+}
+
+@media (pointer: coarse) {
+    .filter-btn {
+        padding: 12px 24px;
+        min-height: 48px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
 }
 
 .filter-btn:hover {
@@ -633,6 +659,7 @@ header h1 {
     width: 100%;
     height: 100%;
     z-index: 1;
+    -webkit-tap-highlight-color: transparent;
 }
 
 .checkmark {
@@ -645,6 +672,22 @@ header h1 {
     display: flex;
     align-items: center;
     justify-content: center;
+}
+
+@media (pointer: coarse) {
+    .checkbox-wrapper {
+        width: 32px;
+        height: 32px;
+    }
+
+    .checkmark {
+        width: 32px;
+        height: 32px;
+    }
+
+    .checkmark::after {
+        font-size: 18px;
+    }
 }
 
 .checkbox-wrapper input:checked + .checkmark {
@@ -694,6 +737,16 @@ header h1 {
     justify-content: center;
     font-size: 1.2rem;
     opacity: 0;
+    -webkit-tap-highlight-color: transparent;
+}
+
+@media (pointer: coarse) {
+    .delete-btn {
+        width: 44px;
+        height: 44px;
+        font-size: 1.4rem;
+        opacity: 1;
+    }
 }
 
 .todo-item:hover .delete-btn {
@@ -871,17 +924,26 @@ footer {
         font-size: 1.5rem;
     }
 
-    .filter-btn {
-        padding: 8px 16px;
-        font-size: 0.85rem;
-    }
-
     .todo-item {
         padding: 15px;
     }
+}
 
-    .delete-btn {
-        opacity: 1;
+/* Touch feedback */
+@media (pointer: coarse) {
+    .calendar-nav:active,
+    .calendar-day:active,
+    .filter-btn:active,
+    .todo-item:active,
+    .delete-btn:active,
+    .theme-toggle:active,
+    .clear-btn:active,
+    .action-btn:active,
+    .voice-btn:active,
+    .add-btn:active,
+    .theme-option:active {
+        transform: scale(0.95);
+        opacity: 0.8;
     }
 }
 
@@ -1126,4 +1188,174 @@ footer {
 
 [data-theme="light"] .theme-toggle:hover {
     border-color: #6366f1;
+}
+
+/* Update Notification */
+.update-notification {
+    position: fixed;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--bg-card);
+    backdrop-filter: blur(20px);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    padding: 16px 24px;
+    z-index: 2000;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+    animation: slideUp 0.4s ease;
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateX(-50%) translateY(100px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+    }
+}
+
+.update-content {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.update-icon {
+    font-size: 1.5rem;
+    animation: spin 2s linear infinite;
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.update-text {
+    font-size: 0.95rem;
+    color: var(--text-primary);
+}
+
+.update-btn {
+    padding: 10px 20px;
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    border: none;
+    border-radius: 10px;
+    color: white;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-weight: 500;
+}
+
+.update-btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+}
+
+/* Install Prompt */
+.install-prompt {
+    position: fixed;
+    bottom: 30px;
+    left: 20px;
+    right: 20px;
+    background: var(--bg-card);
+    backdrop-filter: blur(20px);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    padding: 16px;
+    z-index: 2000;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+    animation: slideUp 0.4s ease;
+}
+
+.install-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.install-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex: 1;
+}
+
+.install-icon {
+    font-size: 2rem;
+}
+
+.install-text {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.install-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.install-desc {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+}
+
+.install-btn {
+    padding: 12px 24px;
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    border: none;
+    border-radius: 10px;
+    color: white;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+.install-btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+}
+
+.install-close {
+    width: 36px;
+    height: 36px;
+    border: 1px solid var(--border-color);
+    background: transparent;
+    color: var(--text-secondary);
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    flex-shrink: 0;
+}
+
+.install-close:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--text-primary);
+}
+
+@media (min-width: 768px) {
+    .install-prompt {
+        left: auto;
+        right: 20px;
+        max-width: 400px;
+    }
 }

@@ -27,3 +27,8 @@ npm-debug.log*
 # Backup files
 *.bak
 *.backup
+
+# Project specific
+nul
+server.log
+.claude/
