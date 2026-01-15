@@ -90,6 +90,14 @@ class TodoApp {
         // Initialize voice recognition
         this.initVoiceRecognition();
 
+        // Voice error close button
+        const voiceErrorClose = document.getElementById('voiceErrorClose');
+        if (voiceErrorClose) {
+            voiceErrorClose.addEventListener('click', () => {
+                document.getElementById('voiceError').style.display = 'none';
+            });
+        }
+
         // Initialize PWA install prompt
         this.initPWAInstallPrompt();
 
@@ -689,53 +697,103 @@ class TodoApp {
     // Initialize voice recognition
     initVoiceRecognition() {
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        const voiceError = document.getElementById('voiceError');
 
         if (!SpeechRecognition) {
+            console.log('Speech recognition not supported in this browser');
             this.voiceBtn.style.display = 'none';
+            if (voiceError) {
+                voiceError.style.display = 'flex';
+                voiceError.querySelector('span').textContent = '⚠️ 此浏览器不支持语音识别。请使用 Chrome、Edge 或支持 Web Speech API 的浏览器。';
+            }
             return;
         }
 
-        this.recognition = new SpeechRecognition();
-        this.recognition.lang = 'zh-CN';
-        this.recognition.continuous = false;
-        this.recognition.interimResults = false;
-        this.isListening = false;
-
-        this.voiceBtn.addEventListener('click', () => {
-            if (this.isListening) {
-                this.recognition.stop();
-            } else {
-                this.recognition.start();
-            }
-        });
-
-        this.recognition.onstart = () => {
-            this.isListening = true;
-            this.voiceBtn.classList.add('listening');
-            this.todoInput.placeholder = '正在聆听...';
-        };
-
-        this.recognition.onend = () => {
+        try {
+            this.recognition = new SpeechRecognition();
+            this.recognition.lang = 'zh-CN';
+            this.recognition.continuous = false;
+            this.recognition.interimResults = false;
             this.isListening = false;
-            this.voiceBtn.classList.remove('listening');
-            this.todoInput.placeholder = '添加新任务...';
-        };
 
-        this.recognition.onresult = (event) => {
-            const transcript = event.results[0][0].transcript;
-            this.todoInput.value = transcript;
-            this.todoInput.focus();
-        };
+            this.voiceBtn.addEventListener('click', () => {
+                if (this.isListening) {
+                    this.recognition.stop();
+                } else {
+                    this.recognition.start();
+                }
+            });
 
-        this.recognition.onerror = (event) => {
-            this.isListening = false;
-            this.voiceBtn.classList.remove('listening');
-            this.todoInput.placeholder = '添加新任务...';
+            this.recognition.onstart = () => {
+                this.isListening = true;
+                this.voiceBtn.classList.add('listening');
+                this.todoInput.placeholder = '正在聆听...';
+            };
 
-            if (event.error !== 'no-speech') {
-                this.showToast('语音识别失败，请重试', 'error');
+            this.recognition.onend = () => {
+                this.isListening = false;
+                this.voiceBtn.classList.remove('listening');
+                this.todoInput.placeholder = '添加新任务...';
+            };
+
+            this.recognition.onresult = (event) => {
+                const transcript = event.results[0][0].transcript;
+                this.todoInput.value = transcript;
+                this.todoInput.focus();
+            };
+
+            this.recognition.onerror = (event) => {
+                this.isListening = false;
+                this.voiceBtn.classList.remove('listening');
+                this.todoInput.placeholder = '添加新任务...';
+
+                let errorMsg = '语音识别失败';
+                let showDetailed = false;
+
+                switch (event.error) {
+                    case 'no-speech':
+                        return;
+                    case 'audio-capture':
+                        errorMsg = '未检测到麦克风';
+                        showDetailed = true;
+                        break;
+                    case 'not-allowed':
+                        errorMsg = '麦克风权限被拒绝';
+                        showDetailed = true;
+                        if (voiceError) {
+                            voiceError.style.display = 'flex';
+                            voiceError.querySelector('span').textContent = '⚠️ 请允许访问麦克风以使用语音识别功能。点击浏览器地址栏左侧的锁图标授予权限。';
+                        }
+                        break;
+                    case 'network':
+                        errorMsg = '网络连接错误';
+                        showDetailed = true;
+                        break;
+                    case 'aborted':
+                        errorMsg = '语音识别已取消';
+                        break;
+                    default:
+                        if (event.message) {
+                            errorMsg += `: ${event.message}`;
+                        } else {
+                            errorMsg += ` (${event.error})`;
+                        }
+                        showDetailed = true;
+                }
+
+                if (showDetailed) {
+                    this.showToast(errorMsg, 'error');
+                    console.error('Speech recognition error:', event);
+                }
+            };
+        } catch (error) {
+            this.voiceBtn.style.display = 'none';
+            console.error('Failed to initialize speech recognition:', error);
+            if (voiceError) {
+                voiceError.style.display = 'flex';
+                voiceError.querySelector('span').textContent = '⚠️ 语音识别初始化失败。请检查浏览器兼容性并刷新重试。';
             }
-        };
+        }
     }
 }
 
