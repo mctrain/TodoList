@@ -33,6 +33,9 @@ class TodoApp {
         // Load from localStorage
         this.loadTodos();
 
+        // Check browser and show Chrome recommendation
+        this.checkBrowserAndShowRecommendation();
+
         // Register Service Worker
         this.registerServiceWorker();
 
@@ -794,6 +797,100 @@ class TodoApp {
                 voiceError.querySelector('span').textContent = '⚠️ 语音识别初始化失败。请检查浏览器兼容性并刷新重试。';
             }
         }
+    }
+
+    // Check browser and show Chrome recommendation
+    checkBrowserAndShowRecommendation() {
+        const userAgent = navigator.userAgent;
+        const isChrome = /Chrome/.test(userAgent) && !/Edg/.test(userAgent) && !/OPR/.test(userAgent);
+        const isEdge = /Edg/.test(userAgent);
+        const isFirefox = /Firefox/.test(userAgent);
+        const isSafari = /Safari/.test(userAgent) && !/Chrome/.test(userAgent);
+        const isHarmony = /HuaweiBrowser|HarmonyOS/.test(userAgent);
+
+        // Check if user already dismissed the recommendation
+        const dismissed = localStorage.getItem('chromeRecommendationDismissed');
+        const installed = localStorage.getItem('chromeRecommendationInstalled');
+
+        // Only show if not Chrome and not previously dismissed
+        if (!isChrome && !dismissed && !installed && (isHarmony || isSafari || isFirefox)) {
+            this.showBrowserRecommendation();
+        }
+    }
+
+    showBrowserRecommendation() {
+        const existingBanner = document.querySelector('.browser-recommendation');
+        if (existingBanner) return;
+
+        const banner = document.createElement('div');
+        banner.className = 'browser-recommendation';
+        banner.innerHTML = `
+            <div class="recommendation-content">
+                <div class="recommendation-icon">🌐</div>
+                <div class="recommendation-text">
+                    <strong>推荐使用 Chrome 浏览器</strong>
+                    <p>以获得最佳体验和完整的 PWA 功能支持</p>
+                </div>
+                <div class="recommendation-actions">
+                    <button class="recommendation-close" id="recClose" title="不再提示">✕</button>
+                    <button class="recommendation-button" id="recChrome">打开 Chrome</button>
+                </div>
+            </div>
+        `;
+
+        document.body.appendChild(banner);
+
+        // Close button - don't show again
+        document.getElementById('recClose').addEventListener('click', () => {
+            localStorage.setItem('chromeRecommendationDismissed', 'true');
+            banner.style.animation = 'slideOut 0.3s ease forwards';
+            setTimeout(() => banner.remove(), 300);
+        });
+
+        // Open in Chrome button
+        document.getElementById('recChrome').addEventListener('click', () => {
+            this.openInChrome();
+        });
+
+        // Auto-hide after 10 seconds if no action
+        setTimeout(() => {
+            if (banner.parentNode) {
+                banner.style.animation = 'slideOut 0.3s ease forwards';
+                setTimeout(() => banner.remove(), 300);
+            }
+        }, 10000);
+    }
+
+    openInChrome() {
+        const currentUrl = window.location.href;
+        const userAgent = navigator.userAgent;
+
+        // Try different URL schemes based on platform
+        let chromeScheme = null;
+
+        if (/Android/.test(userAgent)) {
+            chromeScheme = 'intent:' + currentUrl + '#Intent;scheme=https;package=com.android.chrome;end;';
+        } else if (/iPhone|iPad|iPod/.test(userAgent)) {
+            // iOS - open App Store or Chrome
+            window.location.href = 'googlechrome://' + currentUrl.replace(/^https?:\/\//, '');
+        } else if (/Windows|Mac|Linux/.test(userAgent)) {
+            // Desktop - just copy URL and show message
+            navigator.clipboard.writeText(currentUrl);
+            this.showToast('网址已复制，请在 Chrome 中打开', 'success');
+            localStorage.setItem('chromeRecommendationDismissed', 'true');
+            const banner = document.querySelector('.browser-recommendation');
+            if (banner) {
+                banner.style.animation = 'slideOut 0.3s ease forwards';
+                setTimeout(() => banner.remove(), 300);
+            }
+        }
+
+        if (chromeScheme) {
+            window.location.href = chromeScheme;
+        }
+
+        // Mark as shown
+        localStorage.setItem('chromeRecommendationShown', 'true');
     }
 }
 

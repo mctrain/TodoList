@@ -1220,6 +1220,150 @@ footer {
     border-color: #6366f1;
 }
 
+/* Browser Recommendation Banner */
+.browser-recommendation {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--bg-card);
+    backdrop-filter: blur(20px);
+    border: 2px solid var(--primary);
+    border-radius: 16px;
+    padding: 16px 20px;
+    z-index: 3000;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+    animation: slideDown 0.4s ease;
+    max-width: 90vw;
+    width: auto;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateX(-50%) translateY(-100px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+    }
+}
+
+@keyframes slideOut {
+    to {
+        opacity: 0;
+        transform: translateX(-50%) translateY(-100px);
+    }
+}
+
+.recommendation-content {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.recommendation-icon {
+    font-size: 2rem;
+    flex-shrink: 0;
+}
+
+.recommendation-text {
+    flex: 1;
+}
+
+.recommendation-text strong {
+    display: block;
+    font-size: 1rem;
+    margin-bottom: 4px;
+    color: var(--text-primary);
+}
+
+.recommendation-text p {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    margin: 0;
+}
+
+.recommendation-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+.recommendation-close {
+    width: 32px;
+    height: 32px;
+    border: 1px solid var(--border-color);
+    background: transparent;
+    color: var(--text-secondary);
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+}
+
+.recommendation-close:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--text-primary);
+}
+
+.recommendation-button {
+    padding: 10px 20px;
+    background: linear-gradient(135deg, #4285f4, #34a853);
+    border: none;
+    border-radius: 10px;
+    color: white;
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+}
+
+.recommendation-button:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 15px rgba(66, 133, 244, 0.4);
+}
+
+.recommendation-button:active {
+    transform: scale(0.95);
+}
+
+@media (max-width: 480px) {
+    .browser-recommendation {
+        top: 10px;
+        padding: 14px 16px;
+    }
+
+    .recommendation-content {
+        gap: 12px;
+        flex-wrap: wrap;
+    }
+
+    .recommendation-text {
+        width: 100%;
+    }
+
+    .recommendation-actions {
+        width: 100%;
+        justify-content: flex-end;
+    }
+
+    .recommendation-button {
+        flex: 1;
+        padding: 12px;
+    }
+}
+
+/* Hide theme switcher temporarily while showing recommendation */
+body.showing-recommendation .theme-switcher {
+    display: none;
+}
+
 /* Update Notification */
 .update-notification {
     position: fixed;
