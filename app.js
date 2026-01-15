@@ -12,6 +12,7 @@ class TodoApp {
         // DOM Elements
         this.todoInput = document.getElementById('todoInput');
         this.addBtn = document.getElementById('addBtn');
+        this.voiceBtn = document.getElementById('voiceBtn');
         this.todoList = document.getElementById('todoList');
         this.emptyState = document.getElementById('emptyState');
         this.clearCompletedBtn = document.getElementById('clearCompleted');
@@ -82,6 +83,9 @@ class TodoApp {
 
         // Load saved theme
         this.loadTheme();
+
+        // Initialize voice recognition
+        this.initVoiceRecognition();
 
         // Initial render
         this.renderCalendar();
@@ -565,6 +569,58 @@ class TodoApp {
         this.themeOptions.forEach(option => {
             option.classList.toggle('active', option.dataset.theme === savedTheme);
         });
+    }
+
+    // Initialize voice recognition
+    initVoiceRecognition() {
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+        if (!SpeechRecognition) {
+            this.voiceBtn.style.display = 'none';
+            return;
+        }
+
+        this.recognition = new SpeechRecognition();
+        this.recognition.lang = 'zh-CN';
+        this.recognition.continuous = false;
+        this.recognition.interimResults = false;
+        this.isListening = false;
+
+        this.voiceBtn.addEventListener('click', () => {
+            if (this.isListening) {
+                this.recognition.stop();
+            } else {
+                this.recognition.start();
+            }
+        });
+
+        this.recognition.onstart = () => {
+            this.isListening = true;
+            this.voiceBtn.classList.add('listening');
+            this.todoInput.placeholder = '正在聆听...';
+        };
+
+        this.recognition.onend = () => {
+            this.isListening = false;
+            this.voiceBtn.classList.remove('listening');
+            this.todoInput.placeholder = '添加新任务...';
+        };
+
+        this.recognition.onresult = (event) => {
+            const transcript = event.results[0][0].transcript;
+            this.todoInput.value = transcript;
+            this.todoInput.focus();
+        };
+
+        this.recognition.onerror = (event) => {
+            this.isListening = false;
+            this.voiceBtn.classList.remove('listening');
+            this.todoInput.placeholder = '添加新任务...';
+
+            if (event.error !== 'no-speech') {
+                this.showToast('语音识别失败，请重试', 'error');
+            }
+        };
     }
 }
 
